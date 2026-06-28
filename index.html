@@ -18,6 +18,9 @@
   <div class="tab-bar">
     <button class="tab-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">Dashboard</button>
     <button class="tab-btn" data-tab="grid" onclick="switchTab('grid')">Timetable</button>
+    <button class="tab-btn" data-tab="papers" onclick="switchTab('papers')">Past Papers</button>
+    <button class="tab-btn" data-tab="goals" onclick="switchTab('goals')">Goals</button>
+    <button class="tab-btn" data-tab="orals" onclick="switchTab('orals')">Oral Prep</button>
     <button class="tab-btn" data-tab="progress" onclick="switchTab('progress')">Progress</button>
     <button class="tab-btn" data-tab="strategy" onclick="switchTab('strategy')">Strategy</button>
   </div>
@@ -136,6 +139,41 @@
         <input type="file" id="importFile2" accept=".json" hidden onchange="importData(event)"/>
       </div>
     </div>
+  </div>
+
+  <!-- ═══════════ TAB: PAST PAPERS ═══════════ -->
+  <div id="tab-papers" class="tab-content">
+    <div class="section-head-row">
+      <p class="section-title">Past Paper Tracker</p>
+      <span class="helper-text">2015 – 2024 &nbsp;·&nbsp; Tap a year to mark</span>
+    </div>
+    <div id="papersContainer"></div>
+  </div>
+
+  <!-- ═══════════ TAB: WEEKLY GOALS ═══════════ -->
+  <div id="tab-goals" class="tab-content">
+    <div class="section-head-row">
+      <p class="section-title">Weekly Study Goals</p>
+      <button class="btn-sm" onclick="resetWeekGoals()">Reset Week</button>
+    </div>
+    <div class="card">
+      <p class="helper-text" style="margin-bottom:14px">Set planned hours per unit, then log actual hours as you study.</p>
+      <div id="goalsContainer"></div>
+    </div>
+    <div class="card">
+      <h3 class="card-title">Week Summary</h3>
+      <div id="goalsSummary"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ TAB: ORAL PREP ═══════════ -->
+  <div id="tab-orals" class="tab-content">
+    <div class="section-head-row">
+      <p class="section-title">Oral Exam Prep</p>
+      <span class="helper-text" id="oralDaysLeft"></span>
+    </div>
+    <p class="helper-text" style="margin-bottom:12px">Tick each item as you complete it. Orals are on <strong>20 July 2026</strong>.</p>
+    <div id="oralsContainer"></div>
   </div>
 
   <!-- ═══════════ TAB: STRATEGY ═══════════ -->
