@@ -603,3 +603,217 @@ window.toggleCheck = toggleCheck;
   buildQuote();
   buildTable();
 })();
+
+/* ══════════════════════════════════════════
+   PAST PAPER TRACKER
+   State: papers[unitKey][year] = 'none'|'attempted'|'reviewed'
+══════════════════════════════════════════ */
+
+var YEARS = [];
+(function(){ for(var y=2015;y<=2024;y++) YEARS.push(y); })();
+
+var PAPER_STATES = ['none','attempted','reviewed'];
+var PAPER_LABELS = {none:'',attempted:'Attempted',reviewed:'Reviewed ✓'};
+var PAPER_COLORS = {none:'#f2f1ed',attempted:'#fde8b8',reviewed:'#d8edca'};
+var PAPER_TC     = {none:'#aaa',attempted:'#4a2800',reviewed:'#1a3d0a'};
+
+function buildPapers() {
+  var c = el('papersContainer');
+  if (!c) return;
+  var papers = sGet('ksl_papers', {});
+  var html = '';
+
+  UNITS.forEach(function(u) {
+    var done = 0, total = YEARS.length;
+    YEARS.forEach(function(y){ if ((papers[u.key]||{})[y]==='reviewed') done++; });
+    var pct = Math.round(done/total*100);
+
+    html += '<div class="card paper-card">' +
+      '<div class="paper-unit-header">' +
+        '<span class="paper-unit-name">'+(u.priority?'★ ':'')+u.name+'</span>' +
+        '<span class="paper-summary">'+done+'/'+total+' reviewed &nbsp;<span class="paper-pct-badge" style="background:'+u.bg+'">'+pct+'%</span></span>' +
+      '</div>' +
+      '<div class="paper-bar-wrap"><div class="paper-bar" style="width:'+pct+'%;background:'+u.bg+'"></div></div>' +
+      '<div class="paper-years">';
+
+    YEARS.forEach(function(y) {
+      var state = (papers[u.key]||{})[y]||'none';
+      html += '<button class="year-btn" style="background:'+PAPER_COLORS[state]+';color:'+PAPER_TC[state]+'" ' +
+              'data-unit="'+u.key+'" data-year="'+y+'" onclick="cyclePaper(\''+u.key+'\','+y+')" ' +
+              'title="'+u.name+' '+y+(state!=='none'?' — '+PAPER_LABELS[state]:'')+'">'+
+                y+'<span class="year-state">'+PAPER_LABELS[state]+'</span>'+
+              '</button>';
+    });
+
+    html += '</div></div>';
+  });
+
+  c.innerHTML = html;
+}
+
+function cyclePaper(unitKey, year) {
+  var papers = sGet('ksl_papers', {});
+  if (!papers[unitKey]) papers[unitKey] = {};
+  var cur = papers[unitKey][year]||'none';
+  var next = PAPER_STATES[(PAPER_STATES.indexOf(cur)+1)%PAPER_STATES.length];
+  papers[unitKey][year] = next;
+  sSet('ksl_papers', papers);
+  buildPapers();
+  if (next==='reviewed') showToast('✓ '+year+' reviewed!');
+  else if (next==='attempted') showToast('Marked as attempted');
+  else showToast('Cleared');
+}
+
+window.cyclePaper = cyclePaper;
+
+/* ══════════════════════════════════════════
+   WEEKLY STUDY GOALS
+   State: goals[unitKey] = {planned:N, actual:N}
+   Resets each Monday (week key = YYYY-WW)
+══════════════════════════════════════════ */
+
+function getWeekKey() {
+  var d = new Date(), day = d.getDay()||7;
+  d.setDate(d.getDate()-day+1); // Monday
+  return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
+}
+
+function buildGoals() {
+  var c = el('goalsContainer'), s = el('goalsSummary');
+  if (!c) return;
+  var wk = getWeekKey();
+  var goals = sGet('ksl_goals_'+wk, {});
+
+  var html = '<div class="goals-header-row"><span class="goals-col-lbl">Unit</span><span class="goals-col-lbl">Planned (hrs)</span><span class="goals-col-lbl">Actual (hrs)</span><span class="goals-col-lbl">Status</span></div>';
+
+  var totalPlanned=0, totalActual=0;
+
+  UNITS.forEach(function(u) {
+    var g = goals[u.key]||{planned:0,actual:0};
+    totalPlanned += g.planned||0;
+    totalActual  += g.actual||0;
+    var diff = (g.actual||0)-(g.planned||0);
+    var status = g.planned===0?'—': diff>=0?'<span class="status-ok">On track ✓</span>':'<span class="status-behind">-'+(Math.abs(diff).toFixed(1))+'h behind</span>';
+
+    html += '<div class="goals-row" style="border-left:3px solid '+u.bg+'">' +
+      '<div class="goals-unit">'+(u.priority?'★ ':'')+u.name+'</div>' +
+      '<div class="goals-input-wrap">' +
+        '<button class="hr-btn" onclick="adjGoal(\''+u.key+'\',\'planned\',-0.5)">−</button>' +
+        '<span class="hr-val" id="gp-'+u.key+'">'+(g.planned||0)+'</span>' +
+        '<button class="hr-btn" onclick="adjGoal(\''+u.key+'\',\'planned\',0.5)">+</button>' +
+      '</div>' +
+      '<div class="goals-input-wrap">' +
+        '<button class="hr-btn" onclick="adjGoal(\''+u.key+'\',\'actual\',-0.5)">−</button>' +
+        '<span class="hr-val" id="ga-'+u.key+'">'+(g.actual||0)+'</span>' +
+        '<button class="hr-btn" onclick="adjGoal(\''+u.key+'\',\'actual\',0.5)">+</button>' +
+      '</div>' +
+      '<div class="goals-status">'+status+'</div>' +
+    '</div>';
+  });
+
+  c.innerHTML = html;
+
+  // Summary
+  var sdiff = totalActual - totalPlanned;
+  var scolor = sdiff>=0?'#1a3d0a':'#a02020';
+  if (s) s.innerHTML =
+    '<div class="summary-row"><span>Total planned this week</span><strong>'+totalPlanned.toFixed(1)+'h</strong></div>'+
+    '<div class="summary-row"><span>Total studied this week</span><strong>'+totalActual.toFixed(1)+'h</strong></div>'+
+    '<div class="summary-row"><span>Difference</span><strong style="color:'+scolor+'">'+(sdiff>=0?'+':'')+sdiff.toFixed(1)+'h</strong></div>'+
+    '<div class="summary-bar-wrap"><div class="summary-bar" style="width:'+Math.min(100,totalPlanned>0?totalActual/totalPlanned*100:0).toFixed(0)+'%;background:#d8edca"></div></div>';
+}
+
+function adjGoal(unitKey, field, delta) {
+  var wk = getWeekKey();
+  var goals = sGet('ksl_goals_'+wk, {});
+  if (!goals[unitKey]) goals[unitKey]={planned:0,actual:0};
+  var cur = goals[unitKey][field]||0;
+  var next = Math.max(0, Math.round((cur+delta)*10)/10);
+  goals[unitKey][field] = next;
+  sSet('ksl_goals_'+wk, goals);
+  buildGoals();
+}
+
+function resetWeekGoals() {
+  if (!confirm('Reset all goals for this week?')) return;
+  sDel('ksl_goals_'+getWeekKey());
+  buildGoals();
+  showToast('Goals reset for this week');
+}
+
+window.adjGoal = adjGoal;
+window.resetWeekGoals = resetWeekGoals;
+
+/* ══════════════════════════════════════════
+   ORAL EXAM PREP CHECKLIST
+   State: orals[unitKey][taskKey] = true/false
+══════════════════════════════════════════ */
+
+var ORAL_TASKS = [
+  {key:'notes',     label:'Written summary notes'},
+  {key:'procedure', label:'Memorised key procedure steps'},
+  {key:'cases',     label:'Reviewed relevant cases / statutes'},
+  {key:'pastq',     label:'Reviewed past oral questions'},
+  {key:'mockoral',  label:'Done at least one mock oral'},
+  {key:'confident', label:'Feel confident to speak on this unit'}
+];
+
+function buildOrals() {
+  var c = el('oralsContainer'), dEl = el('oralDaysLeft');
+  if (!c) return;
+
+  var diff = new Date('2026-07-20T08:00:00+03:00').getTime() - Date.now();
+  var daysLeft = Math.max(0, Math.ceil(diff/86400000));
+  if (dEl) dEl.textContent = daysLeft+' days to go';
+
+  var orals = sGet('ksl_orals', {});
+  var html = '';
+
+  UNITS.forEach(function(u) {
+    var tasks = orals[u.key]||{};
+    var done = ORAL_TASKS.filter(function(t){ return tasks[t.key]; }).length;
+    var pct  = Math.round(done/ORAL_TASKS.length*100);
+
+    html += '<div class="card oral-card">' +
+      '<div class="oral-unit-header">' +
+        '<div class="oral-unit-name">'+(u.priority?'<span class="lwd-star">★</span> ':'')+u.name+'</div>' +
+        '<div class="oral-pct-wrap"><span class="oral-pct">'+done+'/'+ORAL_TASKS.length+'</span>' +
+          '<div class="oral-bar-wrap"><div class="oral-bar" style="width:'+pct+'%;background:'+u.bg+'"></div></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="oral-tasks">';
+
+    ORAL_TASKS.forEach(function(t) {
+      var checked = !!tasks[t.key];
+      html += '<label class="oral-task'+(checked?' oral-task-done':'')+'">' +
+                '<input type="checkbox" '+(checked?'checked':'')+' onchange="toggleOral(\''+u.key+'\',\''+t.key+'\',this.checked)" />' +
+                '<span>'+t.label+'</span>' +
+              '</label>';
+    });
+
+    html += '</div></div>';
+  });
+
+  c.innerHTML = html;
+}
+
+function toggleOral(unitKey, taskKey, checked) {
+  var orals = sGet('ksl_orals', {});
+  if (!orals[unitKey]) orals[unitKey]={};
+  orals[unitKey][taskKey] = checked;
+  sSet('ksl_orals', orals);
+  buildOrals();
+  if (checked) showToast('✓ Marked complete');
+}
+
+window.toggleOral = toggleOral;
+
+/* Patch switchTab to call new builders */
+var _origSwitchTab = switchTab;
+switchTab = function(name) {
+  _origSwitchTab(name);
+  if (name==='papers') buildPapers();
+  if (name==='goals')  buildGoals();
+  if (name==='orals')  buildOrals();
+};
+window.switchTab = switchTab;
