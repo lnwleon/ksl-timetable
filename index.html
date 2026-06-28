@@ -1,185 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="KSL Timetable" />
-  <meta name="description" content="Kenya School of Law - Personal Study Timetable" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-title" content="KSL Timetable"/>
+  <meta name="description" content="Kenya School of Law – Personal Study Timetable"/>
   <title>KSL Study Timetable</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-  <!-- NAV -->
-  <nav class="navbar">
-    <div class="nav-brand">KSL <span>Study</span></div>
-    <div class="nav-actions">
-      <button class="btn-nav" id="editBtn" onclick="toggleEdit()">&#9998; Edit</button>
-      <button class="btn-nav btn-save" id="saveBtn" onclick="saveAll()" hidden>&#128190; Save</button>
-      <button class="btn-nav btn-reset" id="resetBtn" onclick="resetAll()" hidden>&#8617; Reset</button>
-    </div>
-  </nav>
+<!-- NAV -->
+<nav class="navbar">
+  <div class="nav-brand">KSL <span>Study</span></div>
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">Dashboard</button>
+    <button class="tab-btn" data-tab="grid" onclick="switchTab('grid')">Timetable</button>
+    <button class="tab-btn" data-tab="progress" onclick="switchTab('progress')">Progress</button>
+    <button class="tab-btn" data-tab="strategy" onclick="switchTab('strategy')">Strategy</button>
+  </div>
+  <div class="nav-actions">
+    <button class="btn-nav" id="editBtn" onclick="toggleEdit()">&#9998;</button>
+    <button class="btn-nav btn-save" id="saveBtn" onclick="saveAll()" hidden>Save</button>
+  </div>
+</nav>
 
-  <main class="main">
+<main class="main">
 
-    <!-- COUNTDOWN -->
-    <section class="countdown-strip" aria-label="Exam countdowns">
+  <!-- ═══════════ TAB: DASHBOARD ═══════════ -->
+  <div id="tab-dashboard" class="tab-content active">
+
+    <!-- Countdowns -->
+    <div class="countdown-strip">
       <div class="cd-card oral">
         <p class="cd-label">Oral Exams</p>
-        <div class="cd-timer" id="oralTimer" aria-live="polite"></div>
+        <div class="cd-timer" id="oralTimer"></div>
         <p class="cd-date">20 July 2026</p>
         <div class="cd-bar-wrap"><div class="cd-bar" id="oralBar"></div></div>
       </div>
       <div class="cd-card main">
         <p class="cd-label">Main Exams</p>
-        <div class="cd-timer" id="mainTimer" aria-live="polite"></div>
+        <div class="cd-timer" id="mainTimer"></div>
         <p class="cd-date">1 November 2026</p>
         <div class="cd-bar-wrap"><div class="cd-bar" id="mainBar"></div></div>
       </div>
-    </section>
+    </div>
 
-    <!-- TODAY BAR -->
-    <section class="today-bar" aria-label="Today's schedule">
+    <!-- Today schedule – checklist -->
+    <div class="card today-card">
       <div class="today-header">
-        <strong id="todayName">Today</strong>
-        <span class="today-mot" id="todayMot"></span>
+        <div>
+          <h2 class="card-title" id="todayName">Today</h2>
+          <p class="today-mot" id="todayMot"></p>
+        </div>
+        <div class="today-date-badge" id="todayDate"></div>
       </div>
-      <div class="today-pills" id="todayPills"></div>
-    </section>
-
-    <!-- QUOTE -->
-    <div class="quote-bar">
-      <span class="q-mark" aria-hidden="true">&#8220;</span>
-      <p id="dailyQuote"></p>
+      <div id="todayChecklist" class="today-checklist"></div>
     </div>
 
-    <!-- TIMETABLE -->
-    <div class="section-head">
-      <h2 class="section-title">Weekly Timetable</h2>
-      <span class="edit-hint" id="editHint" hidden>Tap a cell to edit</span>
-    </div>
+    <!-- Quote -->
+    <div class="quote-bar" id="quoteBar"></div>
+
+    <!-- Mini time budget from timetable -->
     <div class="card">
-      <div class="table-scroll" role="region" aria-label="Weekly timetable" tabindex="0">
+      <h3 class="card-title">This Week's Time Budget <span class="badge-auto">auto</span></h3>
+      <div id="timeBudget" class="time-budget"></div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════ TAB: TIMETABLE ═══════════ -->
+  <div id="tab-grid" class="tab-content">
+
+    <div class="grid-toolbar">
+      <p class="section-title">Weekly Timetable</p>
+      <div class="toolbar-right">
+        <span class="edit-hint" id="editHint" hidden>Tap a cell to edit</span>
+        <button class="btn-sm" onclick="exportData()">&#8599; Export</button>
+        <button class="btn-sm" onclick="triggerImport()">&#8601; Import</button>
+        <input type="file" id="importFile" accept=".json" hidden onchange="importData(event)"/>
+      </div>
+    </div>
+
+    <div class="card no-pad">
+      <div class="table-scroll">
         <table class="tt" id="mainTable">
           <thead>
             <tr>
-              <th scope="col"></th>
-              <th scope="col">Early<span class="th-sub">6:15–7am</span></th>
-              <th scope="col">Morning<span class="th-sub">9:15–10:15am</span></th>
-              <th scope="col">Afternoon<span class="th-sub">12:15–2:15pm</span></th>
-              <th scope="col">Evening<span class="th-sub">10pm–12am</span></th>
-              <th scope="col">Night<span class="th-sub">+1hr draft</span></th>
+              <th></th>
+              <th>Early<span class="th-sub">6:15–7am</span></th>
+              <th>Block 1<span class="th-sub">9–11am</span></th>
+              <th>Block 2<span class="th-sub">11am–1pm</span></th>
+              <th>Block 3<span class="th-sub">1–3pm</span></th>
+              <th>Block 4<span class="th-sub">3–5pm</span></th>
+              <th>Evening<span class="th-sub">10pm–12am</span></th>
+              <th>Night Draft<span class="th-sub">+1hr</span></th>
             </tr>
           </thead>
           <tbody id="ttBody"></tbody>
         </table>
       </div>
-      <div class="legend" aria-label="Colour legend">
-        <span class="leg"><span class="leg-dot" style="background:#B5D4F4"></span>Civil Lit.</span>
-        <span class="leg"><span class="leg-dot" style="background:#FAC775"></span>Criminal Lit.</span>
-        <span class="leg"><span class="leg-dot" style="background:#C0DD97"></span>Commercial</span>
-        <span class="leg"><span class="leg-dot" style="background:#F4C0D1"></span>Conveyancing</span>
-        <span class="leg"><span class="leg-dot" style="background:#CECBF6"></span>Trial</span>
-        <span class="leg"><span class="leg-dot" style="background:#9FE1CB"></span>LPM</span>
-        <span class="leg"><span class="leg-dot" style="background:#F5C4B3"></span>LWD</span>
-        <span class="leg"><span class="leg-dot" style="background:#D3D1C7"></span>PE</span>
-        <span class="leg"><span class="leg-dot" style="background:#f7b84e"></span>Probate</span>
-        <span class="leg"><span class="leg-dot" style="background:#4a8c00"></span>Free Day</span>
+      <div class="legend">
+        <span class="leg"><span class="leg-dot c-civil"></span>Civil Lit.</span>
+        <span class="leg"><span class="leg-dot c-crim"></span>Criminal Lit.</span>
+        <span class="leg"><span class="leg-dot c-comm"></span>Commercial</span>
+        <span class="leg"><span class="leg-dot c-conv"></span>Conveyancing</span>
+        <span class="leg"><span class="leg-dot c-trial"></span>Trial</span>
+        <span class="leg"><span class="leg-dot c-lpm"></span>LPM</span>
+        <span class="leg"><span class="leg-dot c-lwd"></span>LWD ★</span>
+        <span class="leg"><span class="leg-dot c-pe"></span>PE</span>
+        <span class="leg"><span class="leg-dot c-prob"></span>Probate</span>
+        <span class="leg"><span class="leg-dot c-free"></span>Free Day</span>
       </div>
     </div>
 
-    <!-- PROGRESS -->
-    <div class="section-head">
-      <h2 class="section-title">Unit Progress</h2>
-      <span class="hint-text">Tap a bar to update</span>
-    </div>
+  </div>
+
+  <!-- ═══════════ TAB: PROGRESS ═══════════ -->
+  <div id="tab-progress" class="tab-content">
+    <p class="section-title" style="margin-bottom:12px">Unit Progress</p>
+
     <div class="card">
+      <p class="helper-text">Progress is calculated from your timetable slots. Tap a bar to manually adjust.</p>
       <div class="prog-list" id="progList"></div>
     </div>
 
-    <!-- UNITS + TIMES -->
-    <div class="two-col">
-      <div class="card">
-        <h3 class="card-title">9 Units (2 credit hrs each)</h3>
-        <ul class="units-list">
-          <li><span class="u-dot" style="background:#B5D4F4"></span>Civil Litigation</li>
-          <li><span class="u-dot" style="background:#FAC775"></span>Criminal Litigation</li>
-          <li><span class="u-dot" style="background:#C0DD97"></span>Commercial Trans.</li>
-          <li><span class="u-dot" style="background:#F4C0D1"></span>Conveyancing</li>
-          <li><span class="u-dot" style="background:#CECBF6"></span>Trial</li>
-          <li><span class="u-dot" style="background:#9FE1CB"></span>LPM</li>
-          <li><span class="u-dot" style="background:#F5C4B3"></span>LWD &#9733; Priority</li>
-          <li><span class="u-dot" style="background:#D3D1C7"></span>PE</li>
-          <li><span class="u-dot" style="background:#f7b84e"></span>Probate &amp; Admin</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3 class="card-title">Daily Time Structure</h3>
-        <dl class="time-list">
-          <div class="time-row"><dt>6:15–7:00am</dt><dd>Early session</dd></div>
-          <div class="time-row"><dt>9:00am–4:00pm</dt><dd>Study period (2hrs/unit)</dd></div>
-          <div class="time-row"><dt>9:15–10:15am</dt><dd>Morning class</dd></div>
-          <div class="time-row"><dt>12:15–2:15pm</dt><dd>Afternoon session</dd></div>
-          <div class="time-row"><dt>10:00–11:30pm</dt><dd>Drafting (daily)</dd></div>
-          <div class="time-row"><dt>10pm–12am</dt><dd>Evening + 1hr drafting</dd></div>
-        </dl>
-      </div>
-    </div>
-
-    <!-- TIPS -->
-    <div class="section-head">
-      <h2 class="section-title">Passing Strategy</h2>
-    </div>
     <div class="card">
-      <div class="tips-grid">
-        <div class="tip"><strong>Oral Exams — 20 Jul</strong><p>Speak answers aloud daily. Mock orals with classmates. Focus on procedure for all 9 units.</p></div>
-        <div class="tip"><strong>Past Papers (2015+)</strong><p>Work every paper. Time yourself strictly. Master recurring topics first.</p></div>
-        <div class="tip"><strong>Draft Every Night</strong><p>Pleadings, conveyances, wills, commercial agreements. Never skip drafting.</p></div>
-        <div class="tip"><strong>Saturday = Full Rest</strong><p>Your brain consolidates memory on rest days. Protect it completely.</p></div>
-        <div class="tip"><strong>2 Hours Per Unit Min.</strong><p>Never less than 2hrs per unit per sitting. Depth beats coverage every time.</p></div>
-        <div class="tip"><strong>Nov Mains Rotation</strong><p>After orals, rotate all 9 units weekly. Revisit your weakest units twice.</p></div>
-      </div>
-    </div>
-
-  </main>
-
-  <footer class="footer">
-    Kenya School of Law &mdash; Oral: 20 July 2026 &bull; Main Exams: November 2026<br>
-    Your changes are saved in this browser automatically.
-  </footer>
-
-  <!-- EDIT MODAL -->
-  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
-    <div class="modal">
-      <h3 class="modal-title" id="modalTitle">Edit Cell</h3>
-      <p class="modal-ctx" id="modalCtx"></p>
-      <label class="modal-label" for="modalInput">Subject name</label>
-      <input
-        class="modal-input"
-        type="text"
-        id="modalInput"
-        maxlength="40"
-        autocomplete="off"
-        autocorrect="off"
-        autocapitalize="words"
-        spellcheck="false"
-      />
-      <label class="modal-label">Colour</label>
-      <div class="color-grid" id="colorGrid"></div>
-      <div class="modal-btns">
-        <button class="btn btn-danger" onclick="clearCell()">Clear</button>
-        <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
-        <button class="btn btn-primary" onclick="applyEdit()">Save</button>
+      <h3 class="card-title">Export / Import Your Data</h3>
+      <p class="helper-text" style="margin-bottom:12px">Use this to sync your timetable between devices (phone ↔ laptop).</p>
+      <div class="export-btns">
+        <button class="btn-primary-full" onclick="exportData()">&#8599; Export Schedule (download JSON)</button>
+        <button class="btn-outline-full" onclick="triggerImport()">&#8601; Import Schedule (load JSON)</button>
+        <input type="file" id="importFile2" accept=".json" hidden onchange="importData(event)"/>
       </div>
     </div>
   </div>
 
-  <!-- TOAST -->
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <!-- ═══════════ TAB: STRATEGY ═══════════ -->
+  <div id="tab-strategy" class="tab-content">
+    <p class="section-title" style="margin-bottom:12px">Passing Strategy</p>
+    <div class="tips-grid">
+      <div class="tip"><strong>Oral Exams — 20 Jul</strong><p>Speak answers aloud daily. Mock orals with classmates. Procedure questions are key for all 9 units.</p></div>
+      <div class="tip"><strong>Past Papers (2015+)</strong><p>Work every paper. Time yourself strictly. Master recurring topics first — examiners repeat patterns.</p></div>
+      <div class="tip tip-lwd"><strong>★ LWD — Top Priority</strong><p>Daily 10–11:30pm drafting block is non-negotiable. Draft pleadings, conveyances, wills and commercial agreements every night.</p></div>
+      <div class="tip tip-sat"><strong>&#128308; Saturday = Full Rest</strong><p>Your brain consolidates memory on rest days. This is protected in your timetable. No studying Saturday.</p></div>
+      <div class="tip"><strong>2 Hours Per Unit Min.</strong><p>Never less than 2hrs per unit per sitting. Depth beats coverage every time.</p></div>
+      <div class="tip"><strong>Nov Mains Rotation</strong><p>After orals, rotate all 9 units weekly. Revisit your weakest units twice.</p></div>
+    </div>
 
-  <script src="app.js"></script>
+    <div class="card" style="margin-top:14px">
+      <h3 class="card-title">Daily Time Structure</h3>
+      <dl class="time-list">
+        <div class="time-row"><dt>6:15–7:00am</dt><dd>Early session (subject varies by day)</dd></div>
+        <div class="time-row"><dt>9:00–11:00am</dt><dd>Study Block 1 (2hrs)</dd></div>
+        <div class="time-row"><dt>11:00am–1:00pm</dt><dd>Study Block 2 (2hrs)</dd></div>
+        <div class="time-row"><dt>1:00–3:00pm</dt><dd>Study Block 3 (2hrs)</dd></div>
+        <div class="time-row"><dt>3:00–5:00pm</dt><dd>Study Block 4 (2hrs)</dd></div>
+        <div class="time-row"><dt>10:00pm–12:00am</dt><dd>Evening block</dd></div>
+        <div class="time-row"><dt>+1hr after</dt><dd>Drafting (LWD priority)</dd></div>
+      </dl>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  KSL · Oral: 20 July 2026 · Main: November 2026
+</footer>
+
+<!-- CELL POPOVER -->
+<div id="popover" class="popover" hidden>
+  <div class="popover-header">
+    <span id="popoverCtx" class="popover-ctx"></span>
+    <button class="popover-close" onclick="closePopover()">&#10005;</button>
+  </div>
+  <input class="popover-input" type="text" id="popoverInput" maxlength="40"
+    autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false"
+    placeholder="Subject name…"/>
+  <div class="color-grid" id="colorGrid"></div>
+  <div class="popover-btns">
+    <button class="btn btn-danger" onclick="clearCell()">Clear</button>
+    <button class="btn btn-primary" onclick="applyEdit()">Done</button>
+  </div>
+</div>
+<div id="popoverBackdrop" class="popover-backdrop" hidden onclick="closePopover()"></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
 </body>
 </html>
