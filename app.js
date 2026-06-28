@@ -1,81 +1,78 @@
-/* =============================================
-   KSL Study Timetable — app.js
-   Clean, safe, mobile-ready
-   ============================================= */
-
 'use strict';
 
-/* ---- DATA ---- */
+/* ══════════════════════════════════════════
+   DATA DEFINITIONS
+══════════════════════════════════════════ */
 
 var COLORS = [
-  { cls: 'c-civil', bg: '#B5D4F4', tc: '#042C53' },
-  { cls: 'c-crim',  bg: '#FAC775', tc: '#412402' },
-  { cls: 'c-comm',  bg: '#C0DD97', tc: '#173404' },
-  { cls: 'c-conv',  bg: '#F4C0D1', tc: '#4B1528' },
-  { cls: 'c-trial', bg: '#CECBF6', tc: '#26215C' },
-  { cls: 'c-lpm',   bg: '#9FE1CB', tc: '#04342C' },
-  { cls: 'c-lwd',   bg: '#F5C4B3', tc: '#4A1B0C' },
-  { cls: 'c-pe',    bg: '#D3D1C7', tc: '#2C2C2A' },
-  { cls: 'c-prob',  bg: '#f7b84e', tc: '#3a2000' },
-  { cls: 'c-free',  bg: '#4a8c00', tc: '#ffffff' }
+  {cls:'c-civil', bg:'#daeaf8', tc:'#1a3a5c'},
+  {cls:'c-crim',  bg:'#fde8c0', tc:'#4a2800'},
+  {cls:'c-comm',  bg:'#d8edca', tc:'#1a3d0a'},
+  {cls:'c-conv',  bg:'#f9d6e4', tc:'#4a1530'},
+  {cls:'c-trial', bg:'#e4e2f9', tc:'#2a2060'},
+  {cls:'c-lpm',   bg:'#c8f0e0', tc:'#064030'},
+  {cls:'c-lwd',   bg:'#fcddd0', tc:'#3c1408'},
+  {cls:'c-pe',    bg:'#e8e6df', tc:'#2a2a26'},
+  {cls:'c-prob',  bg:'#fde8b8', tc:'#3a2000'},
+  {cls:'c-free',  bg:'#d8edd0', tc:'#1a4a10'}
 ];
 
+/* 7 columns: early, block1, block2, block3, block4, evening, nightdraft */
 var COL_NAMES = [
-  'Early Session (6:15–7am)',
-  'Morning Class (9:15–10:15am)',
-  'Afternoon (12:15–2:15pm)',
-  'Evening Block (10pm–12am)',
-  'Night Drafting'
+  'Early (6:15–7am)',
+  'Block 1 (9–11am)',
+  'Block 2 (11am–1pm)',
+  'Block 3 (1–3pm)',
+  'Block 4 (3–5pm)',
+  'Evening (10pm–12am)',
+  'Night Drafting (+1hr)'
 ];
 
+var COL_TIMES = [
+  '6:15–7:00am',
+  '9:00–11:00am',
+  '11:00am–1:00pm',
+  '1:00–3:00pm',
+  '3:00–5:00pm',
+  '10:00pm–12:00am',
+  '+1hr drafting'
+];
+
+/* Default timetable — 7 cols per row */
 var DEFAULT_TIMETABLE = [
-  {
-    day: 'Mon', di: 1,
-    cols:   ['c-pe',   'c-civil', 'c-prob',  'c-lwd',   'c-civil'],
-    labels: ['PE',     'Civil Litigation', 'Probate & Admin', 'LWD', 'Civil Litigation']
-  },
-  {
-    day: 'Tue', di: 2,
-    cols:   ['c-lwd',  'c-crim',  'c-trial', 'c-civil', 'c-civil'],
-    labels: ['LWD',    'Criminal Litigation', 'Trial', 'Civil Litigation', 'Civil Litigation']
-  },
-  {
-    day: 'Wed', di: 3,
-    cols:   ['c-lpm',  'c-comm',  'c-pe',    'c-conv',  'c-conv'],
-    labels: ['LPM',    'Commercial Trans.', 'PE', 'Conveyancing', 'Conveyancing']
-  },
-  {
-    day: 'Thu', di: 4,
-    cols:   ['c-lwd',  'c-prob',  'c-lwd',   'c-crim',  'c-lpm'],
-    labels: ['LWD',    'Probate & Admin', 'LWD', 'Criminal Litigation', 'LPM']
-  },
-  {
-    day: 'Fri', di: 5,
-    cols:   ['c-lpm',  'c-pe',    'c-comm',  'c-lpm',   'c-lpm'],
-    labels: ['LPM',    'PE', 'Commercial Trans.', 'LPM', 'LPM']
-  },
-  {
-    day: 'Sat', di: 6,
-    cols:   ['c-free', 'c-free',  'c-free',  'c-free',  'c-free'],
-    labels: ['FREE',   'FREE DAY','FREE',    'FREE',    'REST']
-  },
-  {
-    day: 'Sun', di: 0,
-    cols:   ['c-empty','c-lpm',   'c-trial', 'c-comm',  'c-comm'],
-    labels: ['—',      'LPM ★',   'Trial', 'Commercial Trans.', 'Commercial Trans.']
-  }
+  {day:'Mon',di:1,
+   cols:  ['c-pe',   'c-civil', 'c-prob',  'c-lwd',   'c-civil', 'c-lwd',  'c-civil'],
+   labels:['PE',     'Civil Lit.','Probate & Admin','LWD','Civil Lit.','LWD','Civil Lit.']},
+  {day:'Tue',di:2,
+   cols:  ['c-lwd',  'c-crim',  'c-trial', 'c-civil', 'c-civil', 'c-civil','c-civil'],
+   labels:['LWD',    'Criminal Lit.','Trial','Civil Lit.','Civil Lit.','Civil Lit.','Civil Lit.']},
+  {day:'Wed',di:3,
+   cols:  ['c-lpm',  'c-comm',  'c-pe',    'c-conv',  'c-conv',  'c-conv', 'c-conv'],
+   labels:['LPM',    'Commercial','PE','Conveyancing','Conveyancing','Conveyancing','Conveyancing']},
+  {day:'Thu',di:4,
+   cols:  ['c-lwd',  'c-prob',  'c-lwd',   'c-crim',  'c-lpm',   'c-crim', 'c-lpm'],
+   labels:['LWD',    'Probate & Admin','LWD','Criminal Lit.','LPM','Criminal Lit.','LPM']},
+  {day:'Fri',di:5,
+   cols:  ['c-lpm',  'c-pe',    'c-comm',  'c-lpm',   'c-lpm',   'c-lpm',  'c-lpm'],
+   labels:['LPM',    'PE','Commercial','LPM','LPM','LPM','LPM']},
+  {day:'Sat',di:6,
+   cols:  ['c-free', 'c-free',  'c-free',  'c-free',  'c-free',  'c-free', 'c-free'],
+   labels:['Rest',   'Rest','Rest','Rest','Rest','Rest','Rest']},
+  {day:'Sun',di:0,
+   cols:  ['c-empty','c-lpm',   'c-trial', 'c-prob',  'c-comm',  'c-comm', 'c-comm'],
+   labels:['—',      'LPM ★','Trial','Probate & Admin','Commercial','Commercial','Commercial']}
 ];
 
 var UNITS = [
-  { name: 'Civil Litigation',    key: 'civil', bg: '#B5D4F4' },
-  { name: 'Criminal Litigation', key: 'crim',  bg: '#FAC775' },
-  { name: 'Commercial Trans.',   key: 'comm',  bg: '#C0DD97' },
-  { name: 'Conveyancing',        key: 'conv',  bg: '#F4C0D1' },
-  { name: 'Trial',               key: 'trial', bg: '#CECBF6' },
-  { name: 'LPM',                 key: 'lpm',   bg: '#9FE1CB' },
-  { name: 'LWD',                 key: 'lwd',   bg: '#F5C4B3' },
-  { name: 'PE',                  key: 'pe',    bg: '#D3D1C7' },
-  { name: 'Probate & Admin',     key: 'prob',  bg: '#f7b84e' }
+  {name:'Civil Litigation',  key:'civil', bg:'#daeaf8'},
+  {name:'Criminal Lit.',     key:'crim',  bg:'#fde8c0'},
+  {name:'Commercial Trans.', key:'comm',  bg:'#d8edca'},
+  {name:'Conveyancing',      key:'conv',  bg:'#f9d6e4'},
+  {name:'Trial',             key:'trial', bg:'#e4e2f9'},
+  {name:'LPM',               key:'lpm',   bg:'#c8f0e0'},
+  {name:'LWD ★',             key:'lwd',   bg:'#fcddd0', priority:true},
+  {name:'PE',                key:'pe',    bg:'#e8e6df'},
+  {name:'Probate & Admin',   key:'prob',  bg:'#fde8b8'}
 ];
 
 var QUOTES = [
@@ -94,429 +91,515 @@ var QUOTES = [
 ];
 
 var MOTIVATIONS = [
-  'You got this!', 'Stay focused!', 'Keep pushing!',
-  'One day at a time.', 'Make it count!', 'Discipline = success.',
-  'Eyes on the prize!', 'Believe and achieve!'
+  'You got this!','Stay focused!','Keep pushing!','One day at a time.',
+  'Make it count!','Discipline = success.','Eyes on the prize!','Believe and achieve!'
 ];
 
 var DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-var SESSION_NAMES = ['Early','Morning','Afternoon','Evening','Night'];
+var SESSION_NAMES = ['Early','Block 1','Block 2','Block 3','Block 4','Evening','Night Draft'];
 
-/* ---- SAFE STORAGE ---- */
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
 
-function storageGet(key, fallback) {
-  try {
-    var val = localStorage.getItem(key);
-    if (val === null) return fallback;
-    return JSON.parse(val);
-  } catch (e) {
-    return fallback;
-  }
-}
-
-function storageSet(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-
-function storageRemove(key) {
-  try { localStorage.removeItem(key); } catch (e) {}
-}
-
-/* ---- STATE ---- */
-
-var timetable = storageGet('ksl_tt', null) || JSON.parse(JSON.stringify(DEFAULT_TIMETABLE));
-var progress  = storageGet('ksl_prog', {});
-var editMode  = false;
-var editTarget = null;    /* { r, c } */
+var timetable   = null;
+var progress    = {};
+var checkedToday = {};
+var editMode    = false;
+var editTarget  = null;
 var selectedCls = null;
-var toastTimer = null;
+var toastTimer  = null;
+var activeTab   = 'dashboard';
 
-/* ---- HELPERS ---- */
+/* ══════════════════════════════════════════
+   SAFE STORAGE
+══════════════════════════════════════════ */
 
-function pad2(n) {
-  return n < 10 ? '0' + n : '' + n;
+function sGet(key, fallback) {
+  try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch(e) { return fallback; }
 }
+function sSet(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); return true; }
+  catch(e) { return false; }
+}
+function sDel(key) { try { localStorage.removeItem(key); } catch(e) {} }
 
+/* ══════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════ */
+
+function el(id) { return document.getElementById(id); }
+function pad2(n) { return n < 10 ? '0'+n : ''+n; }
 function colorByCls(cls) {
-  for (var i = 0; i < COLORS.length; i++) {
-    if (COLORS[i].cls === cls) return COLORS[i];
-  }
+  for (var i=0;i<COLORS.length;i++) if (COLORS[i].cls===cls) return COLORS[i];
   return null;
 }
 
-function getEl(id) {
-  return document.getElementById(id);
+/* Map colour class → unit key for auto-counting */
+function clsToKey(cls) {
+  var map = {
+    'c-civil':'civil','c-crim':'crim','c-comm':'comm','c-conv':'conv',
+    'c-trial':'trial','c-lpm':'lpm','c-lwd':'lwd','c-pe':'pe','c-prob':'prob'
+  };
+  return map[cls] || null;
 }
 
-/* ---- COUNTDOWN TIMERS ---- */
+/* Count slots per unit across full timetable */
+function countSlots() {
+  var counts = {};
+  UNITS.forEach(function(u){ counts[u.key] = 0; });
+  timetable.forEach(function(row){
+    row.cols.forEach(function(cls){
+      var k = clsToKey(cls);
+      if (k && counts[k] !== undefined) counts[k]++;
+    });
+  });
+  return counts;
+}
+
+/* Count slots for today's row */
+function todayRow() {
+  var di = new Date().getDay();
+  for (var i=0;i<timetable.length;i++) if (timetable[i].di===di) return timetable[i];
+  return null;
+}
+
+/* ══════════════════════════════════════════
+   TABS
+══════════════════════════════════════════ */
+
+function switchTab(name) {
+  activeTab = name;
+  document.querySelectorAll('.tab-btn').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-tab')===name);
+  });
+  document.querySelectorAll('.tab-content').forEach(function(d){
+    d.classList.toggle('active', d.id==='tab-'+name);
+  });
+  /* Refresh data for the tab being opened */
+  if (name==='dashboard') { buildTodayCard(); buildTimeBudget(); }
+  if (name==='grid')      { buildTable(); }
+  if (name==='progress')  { buildProgress(); }
+}
+
+/* ══════════════════════════════════════════
+   COUNTDOWN TIMERS
+══════════════════════════════════════════ */
 
 function startCountdown(targetISO, timerId, barId, startISO) {
   var target = new Date(targetISO).getTime();
   var start  = new Date(startISO).getTime();
   var total  = target - start;
-  var timerEl = getEl(timerId);
-  var barEl   = getEl(barId);
+  var tEl = el(timerId), bEl = el(barId);
 
   function tick() {
-    var now  = Date.now();
-    var diff = target - now;
-    var pct  = total > 0 ? Math.min(100, Math.max(0, ((total - diff) / total) * 100)) : 100;
-
-    if (barEl) barEl.style.width = pct.toFixed(1) + '%';
-
-    if (!timerEl) return;
-
-    if (diff <= 0) {
-      timerEl.innerHTML = '<span style="font-size:14px;font-weight:700;color:#b03020">Exam Day!</span>';
-      return;
-    }
-
-    var d = Math.floor(diff / 86400000);
-    var h = Math.floor((diff % 86400000) / 3600000);
-    var m = Math.floor((diff % 3600000) / 60000);
-    var s = Math.floor((diff % 60000) / 1000);
-    var cls = timerId === 'oralTimer' ? 'oral' : 'main';
-
-    timerEl.innerHTML =
-      '<div class="cd-unit">' +
-        '<span class="cd-num ' + cls + '">' + d + '</span>' +
-        '<span class="cd-sub">days</span>' +
-      '</div>' +
-      '<span class="cd-sep">:</span>' +
-      '<div class="cd-unit">' +
-        '<span class="cd-num ' + cls + '">' + pad2(h) + '</span>' +
-        '<span class="cd-sub">hrs</span>' +
-      '</div>' +
-      '<span class="cd-sep">:</span>' +
-      '<div class="cd-unit">' +
-        '<span class="cd-num ' + cls + '">' + pad2(m) + '</span>' +
-        '<span class="cd-sub">min</span>' +
-      '</div>' +
-      '<span class="cd-sep">:</span>' +
-      '<div class="cd-unit">' +
-        '<span class="cd-num ' + cls + '">' + pad2(s) + '</span>' +
-        '<span class="cd-sub">sec</span>' +
-      '</div>';
+    var now = Date.now(), diff = target - now;
+    var pct = total>0 ? Math.min(100,Math.max(0,((total-diff)/total)*100)) : 100;
+    if (bEl) bEl.style.width = pct.toFixed(1)+'%';
+    if (!tEl) return;
+    if (diff<=0) { tEl.innerHTML='<span style="font-size:14px;font-weight:700;color:#a02020">Exam Day!</span>'; return; }
+    var d=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000),
+        m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
+    var cls = timerId==='oralTimer'?'oral':'main';
+    tEl.innerHTML =
+      '<div class="cd-unit"><span class="cd-num '+cls+'">'+d+'</span><span class="cd-sub">days</span></div>'+
+      '<span class="cd-sep">:</span>'+
+      '<div class="cd-unit"><span class="cd-num '+cls+'">'+pad2(h)+'</span><span class="cd-sub">hrs</span></div>'+
+      '<span class="cd-sep">:</span>'+
+      '<div class="cd-unit"><span class="cd-num '+cls+'">'+pad2(m)+'</span><span class="cd-sub">min</span></div>'+
+      '<span class="cd-sep">:</span>'+
+      '<div class="cd-unit"><span class="cd-num '+cls+'">'+pad2(s)+'</span><span class="cd-sub">sec</span></div>';
   }
-
-  tick();
-  setInterval(tick, 1000);
+  tick(); setInterval(tick, 1000);
 }
 
-/* ---- TODAY BAR ---- */
+/* ══════════════════════════════════════════
+   TODAY CARD — CHECKLIST
+══════════════════════════════════════════ */
 
-function buildTodayBar() {
-  var di   = new Date().getDay();
-  var nameEl = getEl('todayName');
-  var motEl  = getEl('todayMot');
-  var pillEl = getEl('todayPills');
+function buildTodayCard() {
+  var now = new Date();
+  var di  = now.getDay();
+  var nameEl = el('todayName'), motEl = el('todayMot'),
+      dateEl = el('todayDate'), listEl = el('todayChecklist');
 
   if (nameEl) nameEl.textContent = DAY_NAMES[di];
-  if (motEl)  motEl.textContent  = MOTIVATIONS[new Date().getDate() % MOTIVATIONS.length];
-  if (!pillEl) return;
-
-  var row = null;
-  for (var i = 0; i < timetable.length; i++) {
-    if (timetable[i].di === di) { row = timetable[i]; break; }
+  if (motEl)  motEl.textContent  = MOTIVATIONS[now.getDate() % MOTIVATIONS.length];
+  if (dateEl) {
+    var mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    dateEl.innerHTML = '<strong>'+now.getDate()+' '+mo[now.getMonth()]+'</strong>';
   }
+  if (!listEl) return;
 
-  if (!row) {
-    pillEl.innerHTML = '<span style="font-size:12px;color:#888">No schedule found.</span>';
+  var row = todayRow();
+  if (!row) { listEl.innerHTML='<p class="helper-text">No schedule found.</p>'; return; }
+
+  /* Saturday special */
+  if (row.di===6) {
+    listEl.innerHTML='<div class="today-free">🌿 Saturday — Rest Day<br><small style="font-weight:400;color:#666">Your brain is consolidating memory. No studying today.</small></div>';
     return;
   }
 
+  var dateKey = now.getFullYear()+'-'+pad2(now.getMonth()+1)+'-'+pad2(now.getDate());
+  var storKey = 'ksl_check_'+dateKey;
+  if (!checkedToday[dateKey]) checkedToday[dateKey] = sGet(storKey, {});
+  var checked = checkedToday[dateKey];
+
   var html = '';
-  for (var c = 0; c < 5; c++) {
+  for (var c=0;c<7;c++) {
     var lbl = row.labels[c];
-    if (!lbl || lbl === '—') continue;
-    var col = colorByCls(row.cols[c]);
-    var bg = col ? col.bg : '#eee';
-    var tc = col ? col.tc : '#333';
-    html += '<span class="s-pill" style="background:' + bg + ';color:' + tc + '">' +
-              SESSION_NAMES[c] + ': ' + lbl +
-            '</span>';
+    if (!lbl || lbl==='—') continue;
+    var cls = row.cols[c];
+    var col = colorByCls(cls);
+    var bg = col ? col.bg : '#f2f1ed';
+    var isDone = !!checked[c];
+    html += '<div class="check-item'+(isDone?' done':'')+'" data-col="'+c+'" onclick="toggleCheck(\''+dateKey+'\','+c+')" style="background:'+bg+'22;border-color:'+bg+'">' +
+              '<div class="check-box">'+(isDone?'✓':'')+'</div>'+
+              '<span class="check-session">'+SESSION_NAMES[c]+'</span>'+
+              '<span class="check-label">'+lbl+'</span>'+
+              '<span class="check-time">'+COL_TIMES[c]+'</span>'+
+            '</div>';
   }
-
-  if (!html) {
-    html = '<span style="font-size:12px;color:#4a8c00;font-weight:600">Free day — rest and recharge!</span>';
-  }
-
-  pillEl.innerHTML = html;
+  listEl.innerHTML = html || '<p class="helper-text">Nothing scheduled today.</p>';
 }
 
-/* ---- TIMETABLE ---- */
+function toggleCheck(dateKey, col) {
+  var storKey = 'ksl_check_'+dateKey;
+  if (!checkedToday[dateKey]) checkedToday[dateKey] = {};
+  checkedToday[dateKey][col] = !checkedToday[dateKey][col];
+  sSet(storKey, checkedToday[dateKey]);
+  buildTodayCard();
+}
+
+/* ══════════════════════════════════════════
+   TIME BUDGET (auto from timetable)
+══════════════════════════════════════════ */
+
+function buildTimeBudget() {
+  var budgetEl = el('timeBudget');
+  if (!budgetEl) return;
+  var counts = countSlots();
+  /* max slots for scale */
+  var max = 1;
+  UNITS.forEach(function(u){ if ((counts[u.key]||0)>max) max=counts[u.key]; });
+
+  var html = '';
+  UNITS.forEach(function(u){
+    var n = counts[u.key]||0;
+    var pct = max>0 ? (n/max*100) : 0;
+    var lbl = u.priority ? '<span class="lwd-star">★</span> '+u.name : u.name;
+    html += '<div class="budget-row">'+
+              '<div class="budget-name">'+lbl+'</div>'+
+              '<div class="budget-bar-wrap"><div class="budget-bar" style="width:'+pct.toFixed(0)+'%;background:'+u.bg+'"></div></div>'+
+              '<div class="budget-slots">'+n+' slot'+(n!==1?'s':'')+'</div>'+
+            '</div>';
+  });
+  budgetEl.innerHTML = html;
+}
+
+/* ══════════════════════════════════════════
+   QUOTE
+══════════════════════════════════════════ */
+
+function buildQuote() {
+  var q = el('quoteBar');
+  if (!q) return;
+  var text = QUOTES[new Date().getDate() % QUOTES.length];
+  if (text) q.innerHTML = '&#8220; ' + text;
+}
+
+/* ══════════════════════════════════════════
+   TIMETABLE
+══════════════════════════════════════════ */
 
 function buildTable() {
-  var tbody   = getEl('ttBody');
-  var todayDi = new Date().getDay();
+  var tbody = el('ttBody');
   if (!tbody) return;
-
+  var todayDi = new Date().getDay();
   var html = '';
 
-  for (var r = 0; r < timetable.length; r++) {
-    var row     = timetable[r];
-    var isToday = row.di === todayDi;
-
-    html += '<tr' + (isToday ? ' class="today-row"' : '') + '>';
-    html += '<td class="day-cell">' + row.day + '</td>';
-
-    for (var c = 0; c < 5; c++) {
-      var cls  = row.cols[c]   || 'c-empty';
-      var lbl  = row.labels[c] || '—';
-      var isEmpty = cls === 'c-empty';
-      /* data attrs used by click handler */
-      html += '<td class="' + cls + '" data-r="' + r + '" data-c="' + c + '">' +
-                lbl +
-                '<span class="edit-dot"></span>' +
+  for (var r=0;r<timetable.length;r++) {
+    var row = timetable[r];
+    var isSat   = row.di===6;
+    var isToday = row.di===todayDi;
+    html += '<tr'+(isSat?' class="sat-row"':isToday?' class="today-row"':'')+' data-r="'+r+'">';
+    html += '<td class="day-cell">'+row.day+'</td>';
+    for (var c=0;c<7;c++) {
+      var cls = row.cols[c]||'c-empty';
+      var lbl = row.labels[c]||'—';
+      var isLwd = cls==='c-lwd';
+      html += '<td class="'+cls+'" data-r="'+r+'" data-c="'+c+'">'+
+                (isLwd?'<span class="lwd-badge">★</span>':'')+
+                lbl+
+                '<span class="edit-dot"></span>'+
               '</td>';
     }
-
     html += '</tr>';
   }
-
   tbody.innerHTML = html;
 
-  /* Single delegated click listener — efficient, no rebinding */
+  /* Delegated click */
   tbody.onclick = function(e) {
     if (!editMode) return;
-    var td = e.target.closest('td');
+    var td = e.target.closest('td[data-c]');
     if (!td) return;
-    var r = td.getAttribute('data-r');
-    var c = td.getAttribute('data-c');
-    if (r === null || c === null) return;
-    if (td.classList.contains('day-cell') || td.classList.contains('c-empty')) return;
-    openModal(parseInt(r, 10), parseInt(c, 10));
+    var cls = td.className.split(' ')[0];
+    if (cls==='day-cell'||cls==='c-empty'||cls==='c-free') return;
+    openPopover(parseInt(td.getAttribute('data-r'),10), parseInt(td.getAttribute('data-c'),10), td);
   };
 }
 
-/* ---- PROGRESS ---- */
+/* ══════════════════════════════════════════
+   PROGRESS (auto-calculated + manual override)
+══════════════════════════════════════════ */
 
 function buildProgress() {
-  var list = getEl('progList');
-  if (!list) return;
-
+  var listEl = el('progList');
+  if (!listEl) return;
+  var counts = countSlots();
+  var totalSlots = 7*7; /* 7 rows × 7 cols */
   var html = '';
-  for (var i = 0; i < UNITS.length; i++) {
-    var u   = UNITS[i];
-    var pct = progress[u.key] || 0;
-    html +=
-      '<div class="prog-row">' +
-        '<div class="prog-name">' + u.name + '</div>' +
-        '<div class="prog-bar-wrap" data-key="' + u.key + '" tabindex="0" ' +
-             'role="button" aria-label="' + u.name + ' progress ' + pct + '%">' +
-          '<div class="prog-bar" id="pb-' + u.key + '" ' +
-               'style="width:' + pct + '%;background:' + u.bg + '"></div>' +
-        '</div>' +
-        '<div class="prog-pct" id="pp-' + u.key + '">' + pct + '%</div>' +
-      '</div>';
-  }
 
-  list.innerHTML = html;
+  UNITS.forEach(function(u) {
+    /* Auto % from timetable allocation; manual override stored in progress{} */
+    var autoVal = totalSlots>0 ? Math.round((counts[u.key]||0)/totalSlots*100) : 0;
+    var manVal  = (progress[u.key]!==undefined) ? progress[u.key] : -1;
+    var pct     = manVal>=0 ? manVal : autoVal;
+    var starHtml = u.priority ? '<span class="lwd-star">★</span> ' : '';
+    html += '<div class="prog-row">'+
+              '<div class="prog-name">'+starHtml+u.name+'</div>'+
+              '<div class="prog-bar-wrap" data-key="'+u.key+'" tabindex="0" role="button" aria-label="'+u.name+' progress">'+
+                '<div class="prog-bar" id="pb-'+u.key+'" style="width:'+pct+'%;background:'+u.bg+'"></div>'+
+              '</div>'+
+              '<div class="prog-pct" id="pp-'+u.key+'">'+pct+'%</div>'+
+            '</div>';
+  });
+  listEl.innerHTML = html;
 
-  list.onclick = function(e) {
-    var wrap = e.target.closest('[data-key]');
-    if (!wrap) return;
-    cycleProgress(wrap.getAttribute('data-key'));
+  listEl.onclick = function(e) {
+    var w = e.target.closest('[data-key]');
+    if (w) cycleProgress(w.getAttribute('data-key'));
   };
-
-  list.onkeydown = function(e) {
-    if (e.key === 'Enter' || e.key === ' ') {
-      var wrap = e.target.closest('[data-key]');
-      if (wrap) { e.preventDefault(); cycleProgress(wrap.getAttribute('data-key')); }
+  listEl.onkeydown = function(e) {
+    if (e.key==='Enter'||e.key===' ') {
+      var w = e.target.closest('[data-key]');
+      if (w) { e.preventDefault(); cycleProgress(w.getAttribute('data-key')); }
     }
   };
 }
 
 function cycleProgress(key) {
-  var steps = [0, 25, 50, 75, 100];
-  var cur   = progress[key] || 0;
-  var idx   = steps.indexOf(cur);
-  var next  = steps[(idx + 1) % steps.length];
-
+  var steps=[0,25,50,75,100];
+  var cur = (progress[key]!==undefined&&progress[key]>=0) ? progress[key] : 0;
+  var idx = steps.indexOf(cur);
+  var next = steps[(idx+1)%steps.length];
   progress[key] = next;
-  storageSet('ksl_prog', progress);
-
-  var bar = getEl('pb-' + key);
-  var pct = getEl('pp-' + key);
-  if (bar) bar.style.width = next + '%';
-  if (pct) pct.textContent = next + '%';
-
-  showToast(next === 100 ? '🎉 Unit complete!' : 'Progress: ' + next + '%');
+  sSet('ksl_prog', progress);
+  var bar=el('pb-'+key), pct=el('pp-'+key);
+  if (bar) bar.style.width=next+'%';
+  if (pct) pct.textContent=next+'%';
+  showToast(next===100?'🎉 Unit complete!':'Progress: '+next+'%');
 }
 
-/* ---- EDIT MODE ---- */
+/* ══════════════════════════════════════════
+   EDIT MODE
+══════════════════════════════════════════ */
 
 function toggleEdit() {
   editMode = !editMode;
-  var btn   = getEl('editBtn');
-  var save  = getEl('saveBtn');
-  var reset = getEl('resetBtn');
-  var hint  = getEl('editHint');
-
-  if (btn)   { btn.textContent = editMode ? '✏️ Editing' : '✏️ Edit'; btn.className = 'btn-nav' + (editMode ? ' active' : ''); }
-  if (save)  save.hidden  = !editMode;
-  if (reset) reset.hidden = !editMode;
-  if (hint)  hint.hidden  = !editMode;
-
+  var btn=el('editBtn'), save=el('saveBtn'), hint=el('editHint');
+  if (btn)  { btn.textContent=editMode?'Done':'✏️'; btn.className='btn-nav'+(editMode?' active':''); }
+  if (save) save.hidden=!editMode;
+  if (hint) hint.hidden=!editMode;
   document.body.classList.toggle('edit-mode', editMode);
-
-  if (!editMode) closeModal();
+  if (!editMode) closePopover();
   buildTable();
 }
 
 function saveAll() {
-  var ok = storageSet('ksl_tt', timetable);
-  showToast(ok ? '✅ Timetable saved!' : '⚠️ Could not save — storage may be full');
+  var ok = sSet('ksl_tt', timetable);
+  showToast(ok?'✅ Saved!':'⚠️ Storage full — could not save');
   toggleEdit();
-  buildTodayBar();
+  buildTodayCard();
+  buildTimeBudget();
+  if (activeTab==='progress') buildProgress();
 }
 
 function resetAll() {
-  if (!confirm('Reset to the original timetable? All your edits will be lost.')) return;
+  if (!confirm('Reset to original timetable? All edits will be lost.')) return;
   timetable = JSON.parse(JSON.stringify(DEFAULT_TIMETABLE));
-  storageRemove('ksl_tt');
-  buildTable();
-  buildTodayBar();
+  progress  = {};
+  sDel('ksl_tt'); sDel('ksl_prog');
+  buildTable(); buildTodayCard(); buildTimeBudget();
+  if (activeTab==='progress') buildProgress();
   showToast('↩ Reset to original');
   if (editMode) toggleEdit();
 }
 
-/* ---- MODAL ---- */
+/* ══════════════════════════════════════════
+   POPOVER (inline drawer)
+══════════════════════════════════════════ */
 
-function openModal(r, c) {
+function openPopover(r, c, tdEl) {
   var row = timetable[r];
-  editTarget  = { r: r, c: c };
+  editTarget  = {r:r, c:c};
   selectedCls = row.cols[c];
 
-  var ctx   = getEl('modalCtx');
-  var input = getEl('modalInput');
-  var overlay = getEl('modalOverlay');
-
-  if (ctx)   ctx.textContent  = row.day + ' — ' + COL_NAMES[c];
-  if (input) input.value      = row.labels[c] || '';
-
+  var ctx = el('popoverCtx'), inp = el('popoverInput');
+  var pop = el('popover'), bkd = el('popoverBackdrop');
+  if (ctx) ctx.textContent = row.day+' — '+COL_NAMES[c];
+  if (inp) inp.value = row.labels[c]||'';
   buildColorGrid();
-
-  if (overlay) overlay.hidden = false;
-
-  /* Delay focus so keyboard animation doesn't fight the modal opening */
-  if (input) setTimeout(function() { input.focus(); }, 150);
+  if (pop) pop.hidden=false;
+  if (bkd) bkd.hidden=false;
+  setTimeout(function(){ if (inp) inp.focus(); }, 150);
 }
 
-function closeModal() {
-  var overlay = getEl('modalOverlay');
-  if (overlay) overlay.hidden = true;
-  editTarget = null;
+function closePopover() {
+  var pop=el('popover'), bkd=el('popoverBackdrop');
+  if (pop) pop.hidden=true;
+  if (bkd) bkd.hidden=true;
+  editTarget=null;
 }
 
 function buildColorGrid() {
-  var grid = getEl('colorGrid');
+  var grid = el('colorGrid');
   if (!grid) return;
-
-  var html = '';
-  for (var i = 0; i < COLORS.length; i++) {
-    var co = COLORS[i];
-    html += '<div class="color-opt' + (co.cls === selectedCls ? ' sel' : '') + '" ' +
-              'style="background:' + co.bg + '" ' +
-              'data-cls="' + co.cls + '" ' +
-              'title="' + co.cls.replace('c-', '') + '" ' +
-              'tabindex="0" role="button"></div>';
-  }
-
-  grid.innerHTML = html;
-
-  grid.onclick = function(e) {
-    var opt = e.target.closest('[data-cls]');
-    if (!opt) return;
-    selectedCls = opt.getAttribute('data-cls');
-    buildColorGrid();
+  var html='';
+  COLORS.forEach(function(co){
+    html+='<div class="color-opt'+(co.cls===selectedCls?' sel':'')+'" '+
+          'style="background:'+co.bg+'" data-cls="'+co.cls+'" tabindex="0" role="button"></div>';
+  });
+  grid.innerHTML=html;
+  grid.onclick=function(e){
+    var opt=e.target.closest('[data-cls]');
+    if (opt){selectedCls=opt.getAttribute('data-cls'); buildColorGrid();}
   };
 }
 
 function applyEdit() {
   if (!editTarget) return;
-  var input = getEl('modalInput');
-  var lbl   = input ? input.value.trim() : '';
-
-  if (!lbl) { showToast('Please enter a subject name'); return; }
-
-  timetable[editTarget.r].labels[editTarget.c] = lbl;
-  timetable[editTarget.r].cols[editTarget.c]   = selectedCls;
-
+  var inp=el('popoverInput');
+  var lbl=inp?inp.value.trim():'';
+  if (!lbl){showToast('Enter a subject name');return;}
+  timetable[editTarget.r].labels[editTarget.c]=lbl;
+  timetable[editTarget.r].cols[editTarget.c]=selectedCls;
   buildTable();
-  closeModal();
-  showToast('Updated — tap 💾 Save to keep');
+  buildTimeBudget();
+  if (activeTab==='progress') buildProgress();
+  closePopover();
+  showToast('Updated — tap Save to keep');
 }
 
 function clearCell() {
   if (!editTarget) return;
-  timetable[editTarget.r].labels[editTarget.c] = '—';
-  timetable[editTarget.r].cols[editTarget.c]   = 'c-empty';
+  timetable[editTarget.r].labels[editTarget.c]='—';
+  timetable[editTarget.r].cols[editTarget.c]='c-empty';
   buildTable();
-  closeModal();
-  showToast('Cleared — tap 💾 Save to keep');
+  closePopover();
+  showToast('Cleared — tap Save to keep');
 }
 
-/* ---- TOAST ---- */
+/* ══════════════════════════════════════════
+   EXPORT / IMPORT (cross-device sync)
+══════════════════════════════════════════ */
+
+function exportData() {
+  var payload = JSON.stringify({timetable:timetable, progress:progress}, null, 2);
+  try {
+    var blob = new Blob([payload], {type:'application/json'});
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href   = url;
+    a.download = 'ksl-timetable-backup.json';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
+    showToast('✅ Exported! Transfer the file to your other device then Import.');
+  } catch(e) {
+    showToast('⚠️ Export failed — try copying the text below');
+  }
+}
+
+function triggerImport() {
+  /* Try both file inputs */
+  var f = el('importFile') || el('importFile2');
+  if (f) { f.value=''; f.click(); }
+}
+
+function importData(evt) {
+  var file = evt.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      if (!data.timetable||!Array.isArray(data.timetable)) throw new Error('Bad format');
+      timetable = data.timetable;
+      progress  = data.progress||{};
+      sSet('ksl_tt', timetable);
+      sSet('ksl_prog', progress);
+      buildTable(); buildTodayCard(); buildTimeBudget();
+      if (activeTab==='progress') buildProgress();
+      showToast('✅ Imported! Your schedule is now synced.');
+    } catch(err) {
+      showToast('⚠️ Import failed — file may be corrupted');
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
 
 function showToast(msg) {
-  var t = getEl('toast');
+  var t=el('toast');
   if (!t) return;
-  t.textContent = msg;
-  t.className = 'toast show';
+  t.textContent=msg; t.className='toast show';
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(function() { t.className = 'toast'; }, 2500);
+  toastTimer=setTimeout(function(){t.className='toast';},2600);
 }
 
-/* ---- KEYBOARD & OVERLAY EVENTS ---- */
+/* ══════════════════════════════════════════
+   KEYBOARD / GLOBAL EVENTS
+══════════════════════════════════════════ */
 
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeModal();
-  if (e.key === 'Enter') {
-    var overlay = getEl('modalOverlay');
-    if (overlay && !overlay.hidden && editTarget) applyEdit();
+document.addEventListener('keydown', function(e){
+  if (e.key==='Escape') closePopover();
+  if (e.key==='Enter'){
+    var pop=el('popover');
+    if (pop&&!pop.hidden&&editTarget) applyEdit();
   }
 });
 
-/* Close modal by tapping the dark backdrop */
-document.addEventListener('click', function(e) {
-  var overlay = getEl('modalOverlay');
-  if (overlay && !overlay.hidden && e.target === overlay) closeModal();
-});
+/* Expose to HTML onclick */
+window.switchTab   = switchTab;
+window.toggleEdit  = toggleEdit;
+window.saveAll     = saveAll;
+window.resetAll    = resetAll;
+window.closePopover= closePopover;
+window.applyEdit   = applyEdit;
+window.clearCell   = clearCell;
+window.exportData  = exportData;
+window.triggerImport = triggerImport;
+window.importData  = importData;
+window.toggleCheck = toggleCheck;
 
-/* Expose functions called by inline HTML onclick */
-window.toggleEdit = toggleEdit;
-window.saveAll    = saveAll;
-window.resetAll   = resetAll;
-window.closeModal = closeModal;
-window.applyEdit  = applyEdit;
-window.clearCell  = clearCell;
-
-/* ---- INIT ---- */
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
 
 (function init() {
-  /* Countdowns — use EAT timezone offset (+03:00) */
-  startCountdown(
-    '2026-07-20T08:00:00+03:00',
-    'oralTimer', 'oralBar',
-    '2026-01-01T00:00:00+03:00'
-  );
-  startCountdown(
-    '2026-11-01T08:00:00+03:00',
-    'mainTimer', 'mainBar',
-    '2026-01-01T00:00:00+03:00'
-  );
+  timetable = sGet('ksl_tt', null) || JSON.parse(JSON.stringify(DEFAULT_TIMETABLE));
+  progress  = sGet('ksl_prog', {});
 
-  buildTodayBar();
+  startCountdown('2026-07-20T08:00:00+03:00','oralTimer','oralBar','2026-01-01T00:00:00+03:00');
+  startCountdown('2026-11-01T08:00:00+03:00','mainTimer','mainBar','2026-01-01T00:00:00+03:00');
+
+  buildTodayCard();
+  buildTimeBudget();
+  buildQuote();
   buildTable();
-  buildProgress();
-
-  /* Daily quote — changes by day */
-  var q = getEl('dailyQuote');
-  if (q) q.textContent = QUOTES[new Date().getDate() % QUOTES.length];
 })();
