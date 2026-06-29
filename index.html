@@ -5,37 +5,103 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-title" content="KSL Timetable"/>
+  <meta name="apple-mobile-web-app-title" content="KSL Study"/>
   <meta name="description" content="Kenya School of Law – Personal Study Timetable"/>
-  <title>KSL Study Timetable</title>
+  <title>KSL Study</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-<!-- NAV -->
+<!-- ══════════ ONBOARDING OVERLAY ══════════ -->
+<div id="onboarding" class="ob-overlay" hidden>
+  <div class="ob-card">
+    <div class="ob-steps">
+      <!-- Step 1 -->
+      <div class="ob-step active" id="ob-step-1">
+        <div class="ob-emoji">📚</div>
+        <h2 class="ob-title">Welcome to KSL Study</h2>
+        <p class="ob-body">This app helps you prepare for your <strong>Kenya School of Law</strong> exams — oral on <strong>20 July</strong> and mains in <strong>November 2026</strong>.</p>
+        <button class="ob-btn" onclick="obNext(2)">Get started →</button>
+      </div>
+      <!-- Step 2 -->
+      <div class="ob-step" id="ob-step-2">
+        <div class="ob-emoji">🗂️</div>
+        <h2 class="ob-title">4 simple sections</h2>
+        <ul class="ob-list">
+          <li><span class="ob-tag ob-tag-today">Today</span> Your daily checklist &amp; countdowns</li>
+          <li><span class="ob-tag ob-tag-study">Study</span> Timetable &amp; weekly goals</li>
+          <li><span class="ob-tag ob-tag-track">Track</span> Past papers, oral prep &amp; progress</li>
+          <li><span class="ob-tag ob-tag-tips">Tips</span> Passing strategy &amp; time plan</li>
+        </ul>
+        <button class="ob-btn" onclick="obNext(3)">Next →</button>
+      </div>
+      <!-- Step 3 -->
+      <div class="ob-step" id="ob-step-3">
+        <div class="ob-emoji">✅</div>
+        <h2 class="ob-title">Start with Today</h2>
+        <p class="ob-body">Every morning open the <strong>Today</strong> tab and tick off each study session as you complete it. That's all you need to do daily.</p>
+        <button class="ob-btn" onclick="obDone()">Let's go →</button>
+      </div>
+    </div>
+    <!-- Dots -->
+    <div class="ob-dots">
+      <span class="ob-dot active" id="od1"></span>
+      <span class="ob-dot" id="od2"></span>
+      <span class="ob-dot" id="od3"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ NAVBAR ══════════ -->
 <nav class="navbar">
   <div class="nav-brand">KSL <span>Study</span></div>
-  <div class="tab-bar">
-    <button class="tab-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">Dashboard</button>
-    <button class="tab-btn" data-tab="grid" onclick="switchTab('grid')">Timetable</button>
-    <button class="tab-btn" data-tab="papers" onclick="switchTab('papers')">Past Papers</button>
-    <button class="tab-btn" data-tab="goals" onclick="switchTab('goals')">Goals</button>
-    <button class="tab-btn" data-tab="orals" onclick="switchTab('orals')">Oral Prep</button>
-    <button class="tab-btn" data-tab="progress" onclick="switchTab('progress')">Progress</button>
-    <button class="tab-btn" data-tab="strategy" onclick="switchTab('strategy')">Strategy</button>
-  </div>
   <div class="nav-actions">
-    <button class="btn-nav" id="editBtn" onclick="toggleEdit()">&#9998;</button>
-    <button class="btn-nav btn-save" id="saveBtn" onclick="saveAll()" hidden>Save</button>
+    <button class="btn-nav" id="editBtn" onclick="toggleEdit()">✏️ Edit</button>
+    <button class="btn-nav btn-save" id="saveBtn" onclick="saveAll()" hidden>💾 Save</button>
   </div>
 </nav>
 
+<!-- ══════════ BOTTOM TAB BAR ══════════ -->
+<div class="bottom-bar">
+  <button class="bb-btn active" data-tab="today" onclick="switchTab('today')">
+    <span class="bb-icon">🏠</span><span class="bb-label">Today</span>
+  </button>
+  <button class="bb-btn" data-tab="study" onclick="switchTab('study')">
+    <span class="bb-icon">📅</span><span class="bb-label">Study</span>
+  </button>
+  <button class="bb-btn" data-tab="track" onclick="switchTab('track')">
+    <span class="bb-icon">📊</span><span class="bb-label">Track</span>
+  </button>
+  <button class="bb-btn" data-tab="tips" onclick="switchTab('tips')">
+    <span class="bb-icon">💡</span><span class="bb-label">Tips</span>
+  </button>
+</div>
+
 <main class="main">
 
-  <!-- ═══════════ TAB: DASHBOARD ═══════════ -->
-  <div id="tab-dashboard" class="tab-content active">
+  <!-- ══════════ TODAY ══════════ -->
+  <div id="tab-today" class="tab-pane active">
 
-    <!-- Countdowns -->
+    <!-- Hero focus card -->
+    <div class="hero-card">
+      <div class="hero-left">
+        <p class="hero-day" id="heroDay">Today</p>
+        <p class="hero-date" id="heroDate"></p>
+        <p class="hero-mot" id="heroMot"></p>
+      </div>
+      <div class="hero-ring-wrap">
+        <svg class="ring-svg" viewBox="0 0 60 60">
+          <circle class="ring-bg" cx="30" cy="30" r="24"/>
+          <circle class="ring-fg ring-oral" cx="30" cy="30" r="24" id="ringOral"/>
+        </svg>
+        <div class="ring-inner">
+          <span class="ring-num" id="ringDays">—</span>
+          <span class="ring-lbl">days</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Exam countdowns -->
     <div class="countdown-strip">
       <div class="cd-card oral">
         <p class="cd-label">Oral Exams</p>
@@ -46,19 +112,16 @@
       <div class="cd-card main">
         <p class="cd-label">Main Exams</p>
         <div class="cd-timer" id="mainTimer"></div>
-        <p class="cd-date">1 November 2026</p>
+        <p class="cd-date">1 Nov 2026</p>
         <div class="cd-bar-wrap"><div class="cd-bar" id="mainBar"></div></div>
       </div>
     </div>
 
-    <!-- Today schedule – checklist -->
+    <!-- Daily checklist -->
     <div class="card today-card">
-      <div class="today-header">
-        <div>
-          <h2 class="card-title" id="todayName">Today</h2>
-          <p class="today-mot" id="todayMot"></p>
-        </div>
-        <div class="today-date-badge" id="todayDate"></div>
+      <div class="today-hdr">
+        <h2 class="card-title">Today's Sessions</h2>
+        <span class="today-prog" id="todayProg"></span>
       </div>
       <div id="todayChecklist" class="today-checklist"></div>
     </div>
@@ -66,23 +129,25 @@
     <!-- Quote -->
     <div class="quote-bar" id="quoteBar"></div>
 
-    <!-- Mini time budget from timetable -->
-    <div class="card">
-      <h3 class="card-title">This Week's Time Budget <span class="badge-auto">auto</span></h3>
-      <div id="timeBudget" class="time-budget"></div>
-    </div>
-
   </div>
 
-  <!-- ═══════════ TAB: TIMETABLE ═══════════ -->
-  <div id="tab-grid" class="tab-content">
+  <!-- ══════════ STUDY ══════════ -->
+  <div id="tab-study" class="tab-pane">
 
-    <div class="grid-toolbar">
+    <!-- Empty state shown once, replaced by content -->
+    <div class="empty-state" id="studyEmpty" hidden>
+      <div class="es-icon">📅</div>
+      <p class="es-title">Your weekly timetable</p>
+      <p class="es-body">Tap <strong>✏️ Edit</strong> in the top-right to customise any cell.</p>
+    </div>
+
+    <!-- Timetable -->
+    <div class="section-head-row">
       <p class="section-title">Weekly Timetable</p>
       <div class="toolbar-right">
         <span class="edit-hint" id="editHint" hidden>Tap a cell to edit</span>
-        <button class="btn-sm" onclick="exportData()">&#8599; Export</button>
-        <button class="btn-sm" onclick="triggerImport()">&#8601; Import</button>
+        <button class="btn-sm" onclick="exportData()">↑ Export</button>
+        <button class="btn-sm" onclick="triggerImport()">↓ Import</button>
         <input type="file" id="importFile" accept=".json" hidden onchange="importData(event)"/>
       </div>
     </div>
@@ -99,7 +164,7 @@
               <th>Block 3<span class="th-sub">1–3pm</span></th>
               <th>Block 4<span class="th-sub">3–5pm</span></th>
               <th>Evening<span class="th-sub">10pm–12am</span></th>
-              <th>Night Draft<span class="th-sub">+1hr</span></th>
+              <th>Night<span class="th-sub">+1hr draft</span></th>
             </tr>
           </thead>
           <tbody id="ttBody"></tbody>
@@ -115,75 +180,83 @@
         <span class="leg"><span class="leg-dot c-lwd"></span>LWD ★</span>
         <span class="leg"><span class="leg-dot c-pe"></span>PE</span>
         <span class="leg"><span class="leg-dot c-prob"></span>Probate</span>
-        <span class="leg"><span class="leg-dot c-free"></span>Free Day</span>
+        <span class="leg"><span class="leg-dot c-free"></span>Free</span>
       </div>
     </div>
 
-  </div>
-
-  <!-- ═══════════ TAB: PROGRESS ═══════════ -->
-  <div id="tab-progress" class="tab-content">
-    <p class="section-title" style="margin-bottom:12px">Unit Progress</p>
-
-    <div class="card">
-      <p class="helper-text">Progress is calculated from your timetable slots. Tap a bar to manually adjust.</p>
-      <div class="prog-list" id="progList"></div>
-    </div>
-
-    <div class="card">
-      <h3 class="card-title">Export / Import Your Data</h3>
-      <p class="helper-text" style="margin-bottom:12px">Use this to sync your timetable between devices (phone ↔ laptop).</p>
-      <div class="export-btns">
-        <button class="btn-primary-full" onclick="exportData()">&#8599; Export Schedule (download JSON)</button>
-        <button class="btn-outline-full" onclick="triggerImport()">&#8601; Import Schedule (load JSON)</button>
-        <input type="file" id="importFile2" accept=".json" hidden onchange="importData(event)"/>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════ TAB: PAST PAPERS ═══════════ -->
-  <div id="tab-papers" class="tab-content">
-    <div class="section-head-row">
-      <p class="section-title">Past Paper Tracker</p>
-      <span class="helper-text">2015 – 2024 &nbsp;·&nbsp; Tap a year to mark</span>
-    </div>
-    <div id="papersContainer"></div>
-  </div>
-
-  <!-- ═══════════ TAB: WEEKLY GOALS ═══════════ -->
-  <div id="tab-goals" class="tab-content">
-    <div class="section-head-row">
+    <!-- Weekly Goals -->
+    <div class="section-head-row" style="margin-top:20px">
       <p class="section-title">Weekly Study Goals</p>
-      <button class="btn-sm" onclick="resetWeekGoals()">Reset Week</button>
+      <button class="btn-sm" onclick="resetWeekGoals()">Reset</button>
     </div>
     <div class="card">
-      <p class="helper-text" style="margin-bottom:14px">Set planned hours per unit, then log actual hours as you study.</p>
+      <p class="helper-text" style="margin-bottom:14px">Tap <strong>+</strong> or <strong>−</strong> to set planned hours, then log actual hours as you study each day.</p>
       <div id="goalsContainer"></div>
     </div>
     <div class="card">
       <h3 class="card-title">Week Summary</h3>
       <div id="goalsSummary"></div>
     </div>
+
   </div>
 
-  <!-- ═══════════ TAB: ORAL PREP ═══════════ -->
-  <div id="tab-orals" class="tab-content">
+  <!-- ══════════ TRACK ══════════ -->
+  <div id="tab-track" class="tab-pane">
+
+    <!-- Past Papers -->
     <div class="section-head-row">
+      <p class="section-title">Past Paper Tracker</p>
+      <span class="helper-text">2015–2024 · Tap a year</span>
+    </div>
+    <div class="card es-card" id="papersEmpty">
+      <div class="es-icon">📄</div>
+      <p class="es-title">Track your past papers</p>
+      <p class="es-body">Tap any year below to mark it as <span style="background:#fde8b8;padding:1px 6px;border-radius:4px;font-weight:600">Attempted</span> or <span style="background:#d8edca;padding:1px 6px;border-radius:4px;font-weight:600">Reviewed ✓</span></p>
+    </div>
+    <div id="papersContainer"></div>
+
+    <!-- Oral Prep -->
+    <div class="section-head-row" style="margin-top:20px">
       <p class="section-title">Oral Exam Prep</p>
       <span class="helper-text" id="oralDaysLeft"></span>
     </div>
-    <p class="helper-text" style="margin-bottom:12px">Tick each item as you complete it. Orals are on <strong>20 July 2026</strong>.</p>
+    <div class="card es-card" id="oralsEmpty">
+      <div class="es-icon">🎤</div>
+      <p class="es-title">Prepare for your oral exams</p>
+      <p class="es-body">Tick off each checklist item per unit as you prepare. Orals are on <strong>20 July 2026</strong>.</p>
+    </div>
     <div id="oralsContainer"></div>
+
+    <!-- Progress -->
+    <div class="section-head-row" style="margin-top:20px">
+      <p class="section-title">Unit Progress</p>
+      <span class="helper-text">Tap bars to adjust</span>
+    </div>
+    <div class="card">
+      <div class="prog-list" id="progList"></div>
+    </div>
+
+    <!-- Export/Import -->
+    <div class="card" style="margin-top:4px">
+      <h3 class="card-title">Sync Between Devices</h3>
+      <p class="helper-text" style="margin-bottom:12px">Export your data as a file, then import it on another device to keep everything in sync.</p>
+      <div class="export-btns">
+        <button class="btn-primary-full" onclick="exportData()">↑ Export (download file)</button>
+        <button class="btn-outline-full" onclick="triggerImport()">↓ Import (load file)</button>
+        <input type="file" id="importFile2" accept=".json" hidden onchange="importData(event)"/>
+      </div>
+    </div>
+
   </div>
 
-  <!-- ═══════════ TAB: STRATEGY ═══════════ -->
-  <div id="tab-strategy" class="tab-content">
+  <!-- ══════════ TIPS ══════════ -->
+  <div id="tab-tips" class="tab-pane">
     <p class="section-title" style="margin-bottom:12px">Passing Strategy</p>
     <div class="tips-grid">
       <div class="tip"><strong>Oral Exams — 20 Jul</strong><p>Speak answers aloud daily. Mock orals with classmates. Procedure questions are key for all 9 units.</p></div>
-      <div class="tip"><strong>Past Papers (2015+)</strong><p>Work every paper. Time yourself strictly. Master recurring topics first — examiners repeat patterns.</p></div>
-      <div class="tip tip-lwd"><strong>★ LWD — Top Priority</strong><p>Daily 10–11:30pm drafting block is non-negotiable. Draft pleadings, conveyances, wills and commercial agreements every night.</p></div>
-      <div class="tip tip-sat"><strong>&#128308; Saturday = Full Rest</strong><p>Your brain consolidates memory on rest days. This is protected in your timetable. No studying Saturday.</p></div>
+      <div class="tip"><strong>Past Papers (2015+)</strong><p>Work every paper. Time yourself strictly. Master recurring topics first — patterns repeat.</p></div>
+      <div class="tip tip-lwd"><strong>★ LWD — Top Priority</strong><p>Nightly drafting block is non-negotiable. Draft pleadings, conveyances, wills and commercial agreements every night.</p></div>
+      <div class="tip tip-sat"><strong>🟢 Saturday = Full Rest</strong><p>Your brain consolidates memory on rest days. Saturday is protected. No studying.</p></div>
       <div class="tip"><strong>2 Hours Per Unit Min.</strong><p>Never less than 2hrs per unit per sitting. Depth beats coverage every time.</p></div>
       <div class="tip"><strong>Nov Mains Rotation</strong><p>After orals, rotate all 9 units weekly. Revisit your weakest units twice.</p></div>
     </div>
@@ -192,27 +265,26 @@
       <h3 class="card-title">Daily Time Structure</h3>
       <dl class="time-list">
         <div class="time-row"><dt>6:15–7:00am</dt><dd>Early session (subject varies by day)</dd></div>
-        <div class="time-row"><dt>9:00–11:00am</dt><dd>Study Block 1 (2hrs)</dd></div>
-        <div class="time-row"><dt>11:00am–1:00pm</dt><dd>Study Block 2 (2hrs)</dd></div>
-        <div class="time-row"><dt>1:00–3:00pm</dt><dd>Study Block 3 (2hrs)</dd></div>
-        <div class="time-row"><dt>3:00–5:00pm</dt><dd>Study Block 4 (2hrs)</dd></div>
+        <div class="time-row"><dt>9:00–11:00am</dt><dd>Study Block 1 (2 hrs)</dd></div>
+        <div class="time-row"><dt>11:00am–1:00pm</dt><dd>Study Block 2 (2 hrs)</dd></div>
+        <div class="time-row"><dt>1:00–3:00pm</dt><dd>Study Block 3 (2 hrs)</dd></div>
+        <div class="time-row"><dt>3:00–5:00pm</dt><dd>Study Block 4 (2 hrs)</dd></div>
         <div class="time-row"><dt>10:00pm–12:00am</dt><dd>Evening block</dd></div>
-        <div class="time-row"><dt>+1hr after</dt><dd>Drafting (LWD priority)</dd></div>
+        <div class="time-row"><dt>+1 hr after</dt><dd>Drafting (LWD priority)</dd></div>
       </dl>
     </div>
   </div>
 
 </main>
 
-<footer class="footer">
-  KSL · Oral: 20 July 2026 · Main: November 2026
-</footer>
+<footer class="footer">KSL · Oral: 20 July 2026 · Mains: November 2026</footer>
 
 <!-- CELL POPOVER -->
+<div id="popoverBackdrop" class="popover-backdrop" hidden onclick="closePopover()"></div>
 <div id="popover" class="popover" hidden>
   <div class="popover-header">
     <span id="popoverCtx" class="popover-ctx"></span>
-    <button class="popover-close" onclick="closePopover()">&#10005;</button>
+    <button class="popover-close" onclick="closePopover()">✕</button>
   </div>
   <input class="popover-input" type="text" id="popoverInput" maxlength="40"
     autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false"
@@ -223,7 +295,6 @@
     <button class="btn btn-primary" onclick="applyEdit()">Done</button>
   </div>
 </div>
-<div id="popoverBackdrop" class="popover-backdrop" hidden onclick="closePopover()"></div>
 
 <!-- TOAST -->
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
